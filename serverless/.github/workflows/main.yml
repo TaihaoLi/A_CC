@@ -1,0 +1,28 @@
+
+   
+name: Deploy
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [closed]
+
+jobs:
+  deploy_lambda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: deploy
+        run: |
+          zip handler.zip handler.js
+          aws lambda update-function-code --function-name=test_Service --zip-file=fileb://handler.zip

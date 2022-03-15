@@ -1,0 +1,44 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Packer build on merged
+
+env:
+ AWS_REGION: us-east-1
+ INSTANCE_TYPE: t2.micro
+ subnet_id: subnet-05c59f2965d0f4dac
+ source_ami: ami-09e67e426f25ce0d7
+ prod_account_id: 995183507301
+
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events but only for the main branch
+  pull_request:
+    branches: [ main ]
+    types: [closed]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "validate"
+  build:
+    # The type of runner that the job will run on
+    if: github.event.pull_request.merged == true 
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+     
+      # build artifact
+      - name: Build Artifact
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          target: Packer/ami.json
+        env:
+          PACKER_LOG: 1
+          aws_access_key: ${{secrets.PROD_AMI_ACCESSKEYID}}
+          aws_secret_key: ${{secrets.PROD_AMI_ACCESSKEY}}
+
